@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM Dashboard - Customers</title>
+    <style>
+        /* Переменные */
+        :root {
+            --primary-color: #2B3844;
+            --secondary-color: #F5F5F5;
+            --accent-color: #4CAF50;
+            --text-color: #292D32;
+            --border-radius: 10px;
+            --transition: all 0.3s ease;
+            --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Базовые стили */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--secondary-color);
+            line-height: 1.6;
+            color: var(--text-color);
+        }
+
+        /* Утилиты */
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+
+        /* Структура */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 100vh;
+        }
+
+        /* Сайдбар */
+        .sidebar {
+            background-color: var(--primary-color);
+            padding: 20px;
+            color: white;
+            position: relative;
+        }
+
+        .sidebar__logo {
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar__logo-icon {
+            width: 32px;
+            height: 32px;
+            background-color: var(--accent-color);
+            border-radius: 50%;
+        }
+
+        .sidebar__nav {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .sidebar__nav-item {
+            padding: 12px 15px;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar__nav-item:hover,
+        .sidebar__nav-item--active {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar__nav-icon {
+            width: 20px;
+            height: 20px;
+            opacity: 0.7;
+        }
+
+        /* Основной контент */
+        .main {
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        /* Хедер */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        .header__title {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .header__actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .header__button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--border-radius);
+            background-color: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header__button:hover {
+            background-color: var(--accent-color);
+        }
+
+        /* Статистика */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stats__card {
+            background-color: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        .stats__title {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .stats__number {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        /* Таблица клиентов */
+        .customers {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .customers__header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .customers__search {
+            position: relative;
+            width: 300px;
+        }
+
+        .customers__search-input {
+            width: 100%;
+            padding: 10px 15px;
+            padding-left: 40px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+        }
+
+        .customers__search-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .customers__table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .customers__table th {
+            background-color: #f8f9fa;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .customers__table td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .customers__table tbody tr {
+            transition: var(--transition);
+        }
+
+        .customers__table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status--active {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status--inactive {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+
+        /* Пагинация */
+        .pagination {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-top: 20px;
+            gap: 10px;
+        }
+
+        .pagination__button {
+            padding: 8px 15px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            background-color: white;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .pagination__button:hover,
+        .pagination__button--active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Мобильное меню */
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1001;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 1024px) {
+            .dashboard {
+                grid-template-columns: 200px 1fr;
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: fixed;
+                left: -250px;
+                width: 250px;
+                height: 100%;
+                z-index: 1000;
+                transition: var(--transition);
+            }
+
+            .sidebar--active {
+                left: 0;
+            }
+
+            .mobile-menu {
+                display: block;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .header__actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .customers__search {
+                width: 100%;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .customers {
+                overflow-x: auto;
+            }
+
+            .customers__table {
+                min-width: 800px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="mobile-menu" aria-label="Toggle menu">
+        ≡
+    </button>
+
+    <div class="dashboard">
+        <aside class="sidebar">
+            <div class="sidebar__logo">
+                <div class="sidebar__logo-icon"></div>
+                <h1>Dashboard CRM</h1>
+            </div>
+            <nav class="sidebar__nav">
+                <div class="sidebar__nav-item">
+                    <span class="sidebar__nav-icon">📊</span>
+                    Dashboard
+                </div>
+                <div class="sidebar__nav-item">
+                    <span class="sidebar__nav-icon">📦</span>
+                    Product
+                </div>
+                <div class="sidebar__nav-item sidebar__nav-item--active">
+                    <span class="sidebar__nav-icon">👥</span>
+                    Customers
+                </div>
+                <div class="sidebar__nav-item">
+                    <span class="sidebar__nav-icon">💰</span>
+                    Income
+                </div>
+                <div class="sidebar__nav-item">
+                    <span class="sidebar__nav-icon">📢</span>
+                    Promote
+                </div>
+                <div class="sidebar__nav-item">
+                    <span class="sidebar__nav-icon">❓</span>
+                    Help
+                </div>
+            </nav>
+        </aside>
+
+        <main class="main">
+            <header class="header">
+                <h2 class="header__title">All Customers</h2>
+                <div class="header__actions">
+                    <button class="header__button">
+                        <span>🔍</span>
+                        Search
+                    </button>
+                    <button class="header__button">
+                        <span>📊</span>
+                        Filter
+                    </button>
+                </div>
+            </header>
+
+            <div class="stats">
+                <div class="stats__card">
+                    <div class="stats__title">Total Customers</div>
+                    <div class="stats__number">2,420</div>
+                </div>
+                <div class="stats__card">
+                    <div class="stats__title">Active Now</div>
+                    <div class="stats__number">1,210</div>
+                </div>
+                <div class="stats__card">
+                    <div class="stats__title">Active Countries</div>
+                    <div class="stats__number">24</div>
+                </div>
+            </div>
+
+            <section class="customers">
+                <div class="customers__header">
+                    <div class="customers__search">
+                        <input type="text" class="customers__search-input" placeholder="Search customers...">
+                    </div>
+                </div>
+
+                <table class="customers__table">
+                    <thead>
+                        <tr>
+                            <th>Customer Name</th>
+                            <th>Company</th>
+                            <th>Phone Number</th>
+                            <th>Email</th>
+                            <th>Country</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Jane Cooper</td>
+                            <td>Microsoft</td>
+                            <td>(225) 555-0118</td>
+                            <td>jane@microsoft.com</td>
+                            <td>United States</td>
+                            <td><span class="status status--active">Active</span></td>
+                        </tr>
+                        <tr>
+                            <td>Floyd Miles</td>
+                            <td>Yahoo</td>
+                            <td>(205) 555-0100</td>
+                            <td>floyd@yahoo.com</td>
+                            <td>Kiribati</td>
+                            <td><span class="status status--inactive">Inactive</span></td>
+                        </tr>
+                        <tr>
+                            <td>Ronald Richards</td>
+                            <td>Adobe</td>
+                            <td>(302) 555-0107</td>
+                            <td>ronald@adobe.com</td>
+                            <td>Israel</td>
+                            <td><span class="status status--inactive">Inactive</span></td>
+                        </tr>
+                        <tr>
+                            <td>Marvin McKinney</td>
+                            <td>Tesla</td>
+                            <td>(252) 555-0126</td>
+                            <td>marvin@tesla.com</td>
+                            <td>Iran</td>
+                            <td><span class="status status--active">Active</span></td>
+                        </tr>
+                        <tr>
+                            <td>Jerome Bell</td>
+                            <td>Google</td>
+                            <td>(629) 555-0129</td>
+                            <td>jerome@google.com</td>
+                            <td>Réunion</td>
+                            <td><span class="status status--active">Active</span></td>
+                        </tr>
+                        <tr>
+                            <td>Kathryn Murphy</td>
+                            <td>Microsoft</td>
+                            <td>(406) 555-0120</td>
+                            <td>kathryn@microsoft.com</td>
+                            <td>Curaçao</td>
+                            <td><span class="status status--active">Active</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="pagination">
+                    <button class="pagination__button">Previous</button>
+                    <button class="pagination__button pagination__button--active">1</button>
+                    <button class="pagination__button">2</button>
+                    <button class="pagination__button">3</button>
+                    <button class="pagination__button">Next</button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // Мобильное меню
+        const mobileMenu = document.querySelector('.mobile-menu');
+        const sidebar = document.querySelector('.sidebar');
+
+        mobileMenu.addEventListener('click', () => {
+            sidebar.classList.toggle('sidebar--active');
+        });
+
+        // Анимация появления элементов
